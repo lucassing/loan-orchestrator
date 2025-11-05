@@ -36,12 +36,16 @@ ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
 # APPS
 # ------------------------------------------------------------------------------
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "rest_framework",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
+    "loans",
 ]
 
 # ------------------------------------------------------------------------------
@@ -101,7 +105,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-
 # ------------------------------------------------------------------------------
 # INTERNATIONALIZATION
 # ------------------------------------------------------------------------------
@@ -125,3 +128,26 @@ MEDIA_ROOT = env("DJANGO_MEDIA_ROOT", default=str(BASE_DIR / "media"))
 # DEFAULTS
 # ------------------------------------------------------------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# ------------------------------------------------------------------------------
+# APPs SETTINGS
+# ------------------------------------------------------------------------------
+REST_FRAMEWORK = {
+    # YOUR SETTINGS
+    "DEFAULT_RENDERER_CLASSES": (
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
+    ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Loan Orchestrator API",
+    "DESCRIPTION": "API for managing loan applications and configuring pipeline workflows.",
+    "VERSION": "1.0.0",
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "SERVE_INCLUDE_SCHEMA": False
+}
