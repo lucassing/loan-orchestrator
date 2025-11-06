@@ -103,3 +103,6 @@ junit.xml
 Thumbs.db
 *.iml
 logs/
+
+# Celery beat state
+celerybeat-schedule
