@@ -6,14 +6,28 @@ from loans.tasks import run_pipeline_task
 import pytest
 
 testdata = [
-    ["Ana", 12000, 4000, 500, "ES", "APPROVED"],
-    ["Luis", 28000, 2000, 1200, "OTHER", "REJECTED"],
-    ["Mia", 20000, 3000, 900, "FR", "NEEDS_REVIEW"]
+    ["Ana", 12000, 4000, 500, "ES", "home renovation","APPROVED"],
+    ["Luis", 28000, 2000, 1200, "OTHER", "home renovation","REJECTED"],
+    ["Mia", 20000, 3000, 900, "FR", "home renovation","NEEDS_REVIEW"],
+    ["Eva", 15000, 5000, 200, "ES", "gambling", "REJECTED"]
 ]
 
-@pytest.mark.parametrize("applicant_name,amount,monthly_income,declared_debts,country,outcome", testdata)
+
+@pytest.mark.parametrize(
+    "applicant_name,amount,monthly_income,declared_debts,country,loan_purpose,outcome",
+    testdata,
+)
 @override_settings(CELERY_TASK_ALWAYS_EAGER=True)
-def test_e2e_create_application_pipeline_and_run(db, applicant_name,amount,monthly_income,declared_debts,country,outcome):
+def test_e2e_create_application_pipeline_and_run(
+    db,
+    applicant_name,
+    amount,
+    monthly_income,
+    declared_debts,
+    country,
+    loan_purpose,
+    outcome,
+):
     client = APIClient()
 
     # 1) Create application
@@ -23,7 +37,7 @@ def test_e2e_create_application_pipeline_and_run(db, applicant_name,amount,month
         "monthly_income": monthly_income,
         "declared_debts": declared_debts,
         "country": country,
-        "loan_purpose": "home renovation",  # not risky
+        "loan_purpose": loan_purpose,  # not risky
     }
     resp = client.post("/api/applications/", data=app_payload, format="json")
     assert resp.status_code == 201, resp.content
@@ -45,15 +59,15 @@ def test_e2e_create_application_pipeline_and_run(db, applicant_name,amount,month
                 "order": 2,
             },
             {
-                "step_type": "risk_scoring",
+                "step_type": "sentiment_check",
                 "order": 3,
+                "params": {
+                    "mode": "llm"
+                },
             },
             {
-                "step_type": "sentiment_check",
+                "step_type": "risk_scoring",
                 "order": 4,
-                "params": {
-                    # "mode": "llm"
-                }
             },
         ],
         "terminal_rules": [
@@ -64,6 +78,11 @@ def test_e2e_create_application_pipeline_and_run(db, applicant_name,amount,month
             },
             {
                 "order": 2,
+                "condition": "sentiment_check.outcome == 'RISKY'",
+                "final_status": "REJECTED",
+            },
+            {
+                "order": 3,
                 "condition": "risk_scoring.outcome == 'PASS'",
                 "final_status": "APPROVED",
             },
