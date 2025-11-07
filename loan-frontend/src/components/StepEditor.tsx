@@ -62,13 +62,13 @@ export function StepEditor({
         <textarea
           className="form-control font-monospace"
           rows={4}
-          value={JSON.stringify(step.params ?? {}, null, 2)}
+          value={step.params}
           onChange={(e) => {
             try {
               const parsed = JSON.parse(e.target.value || "{}");
               update({ params: parsed });
-            } catch {
-              // ignore parse errors while typing
+            } catch (exp) {
+              update({ params: e.target.value });
             }
           }}
         />

@@ -6,7 +6,7 @@ import {
   createPipeline,
   getPipeline,
   updatePipeline,
-} from "@/lib/api";
+} from "@/api/api";
 import { TerminalRuleEditor } from "./TerminalRuleEditor";
 
 
@@ -57,8 +57,9 @@ export function PipelineForm() {
       { order: nextOrder, step_type: "dti_rule", params: {} },
     ]);
   }
-  function changeStep(idx: number, patch: Partial<PipelineStep>) {
-    const arr = [...pipeline.steps];
+  function changeStep(idx: number, patch:any) {
+    const arr = [...pipeline.steps]
+    console.log(patch)
     arr[idx] = { ...arr[idx], ...patch };
     updateField("steps", arr);
   }
