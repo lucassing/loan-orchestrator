@@ -9,8 +9,9 @@ drf-spectacular[sidecar]
 celery
 simpleeval
 redis
-
+django-cors-headers
 
 pytest
 pytest-django
 pytest-cov
+requests
