@@ -2,6 +2,7 @@ from celery import shared_task
 from django.db import transaction
 from django.utils import timezone
 from loans.models import Application, Pipeline, PipelineRun, StepLog
+from orchestrator.core import StepResult
 from orchestrator.steps import STEP_PROCESSORS
 from simpleeval import (
     simple_eval,
@@ -23,11 +24,6 @@ def evaluate_terminal_rule(condition: str, step_outcomes: dict) -> bool:
     """
     eval_context = {}
     for step_name, result in step_outcomes.items():
-        class StepResult:
-            def __init__(self, outcome, detail):
-                self.outcome = outcome
-                self.detail = detail
-
         eval_context[step_name] = StepResult(result["outcome"], result["detail"])
 
     try:
@@ -71,7 +67,10 @@ def run_pipeline_task(application_id, pipeline_id):
                     detail=detail,
                 )
 
-                step_outcomes[step_type] = {"outcome": outcome, "detail": detail}
+                step_outcomes[step_type] = {
+                    "outcome": outcome,
+                    "detail": detail,
+                }
 
             terminal_rules = pipeline.terminal_rules.order_by("order")
             final_status = "NEEDS_REVIEW"

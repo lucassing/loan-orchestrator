@@ -2,6 +2,7 @@ from rest_framework import viewsets, mixins, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from loans.tasks import run_pipeline_task
 
 from .models import Application, Pipeline, PipelineRun
 from .serializers import (
@@ -56,13 +57,12 @@ class RunPipelineAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # TODO:
-        # task = run_pipeline_task.delay(application_id, pipeline_id) 
+        task = run_pipeline_task.delay(application_id, pipeline_id) 
 
         return Response({
             "message": "Pipeline execution successfully initiated.",
             "application_id": application_id,
             "pipeline_id": pipeline_id,
-            # "task_id": task.id,
-            # "poll_status_url": f"/api/runs/by_task_id/{task.id}" # A URL to check Celery task status
+            "task_id": task.id,
+            "poll_status_url": f"/api/runs/by_task_id/{task.id}"
         }, status=status.HTTP_202_ACCEPTED)
