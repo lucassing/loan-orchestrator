@@ -1,18 +1,38 @@
-from .core import BaseStep
+from .core import BaseStep, StepResult
 import logging
 from decimal import Decimal
+from typing import Dict
+from orchestrator.agents import risky_by_keywords, risky_by_deepseek
 
 logger = logging.getLogger(__name__)
-# ----------------------------------------------------------------------
-# Core Business Rules (from the exercise scope)
-# ----------------------------------------------------------------------
+
+
+DEFAULT_PARAMS = {
+    "dti_rule": {"max_dti_threshold": 0.4},
+    "amount_policy": {
+        "cap_for_country": {"ES": 30_000, "FR": 25_000, "DE": 35_000, "OTHER": 20_000}
+    },
+    "risk_scoring": {"approve_threshold": 45},
+    "sentiment_check": {"risky_keywords": ["gambling", "crypto", "casino"]},
+}
+
+
+
 class DebtToIncomeRule(BaseStep):
     name = "dti_rule"
+    
 
-    def execute(self, params: dict) -> tuple[str, dict]:
+    def get_params(self, params):
+        self.threshold = Decimal(
+            params.get(
+                "max_dti_threshold", DEFAULT_PARAMS["dti_rule"]["max_dti_threshold"]
+            )
+        )
+
+    def execute(self, params: dict) -> StepResult:
         """Checks if DTI is below the configured threshold."""
+        self.get_params(params)
         try:
-            # Use Decimal for financial precision
             dti = self.application.declared_debts / self.application.monthly_income
         except (ZeroDivisionError, TypeError):
             logger.error(
@@ -20,99 +40,120 @@ class DebtToIncomeRule(BaseStep):
             )
             return "ERROR", {"reason": "Invalid income data", "dti": "N/A"}
 
-        threshold = Decimal(params.get("max_dti_threshold", "0.35"))  # Default 35%
+        outcome = "PASS" if dti < self.threshold else "FAIL"
+        detail = {"dti": round(dti, 4), "threshold": str(self.threshold)}
 
-        outcome = "PASS" if dti <= threshold else "FAIL"
-        detail = {"dti": str(round(dti, 4)), "threshold": str(threshold)}
-
-        return outcome, detail
+        return StepResult(outcome, detail)
 
 
 class AmountPolicyRule(BaseStep):
     name = "amount_policy"
 
-    def execute(self, params: dict) -> tuple[str, dict]:
-        """Checks if the loan amount exceeds the country-specific maximum."""
-        max_amounts = params.get("max_amounts", {})
-
-        # Get the max amount for the application's country or a default 'OTHER'
+    def get_params(self, params):
+        cap_for_country = params.get(
+            "cap_for_country", DEFAULT_PARAMS["amount_policy"]["cap_for_country"]
+        )
         country_code = self.application.country.upper()
-        max_amount = Decimal(
-            max_amounts.get(country_code, max_amounts.get("OTHER", "25000"))
+        self.max_amount = Decimal(
+            cap_for_country.get(
+                country_code,
+                cap_for_country.get(
+                    "OTHER", DEFAULT_PARAMS["amount_policy"]["cap_for_country"]["OTHER"]
+                ),
+            )
         )
 
-        outcome = "PASS" if self.application.amount <= max_amount else "FAIL"
+    def execute(self, params: dict) -> StepResult:
+        """Checks if the loan amount exceeds the country-specific maximum."""
+        self.get_params(params)
+        outcome = "PASS" if self.application.amount <= self.max_amount else "FAIL"
         detail = {
-            "country_max": str(max_amount),
+            "country_max": self.max_amount,
             "application_amount": str(self.application.amount),
         }
 
-        return outcome, detail
-
-
-# ----------------------------------------------------------------------
-# External Service/Bonus Steps (from the exercise scope)
-# ----------------------------------------------------------------------
+        return StepResult(outcome, detail)
 
 
 class RiskScoringStep(BaseStep):
     name = "risk_scoring"
 
-    def execute(self, params: dict) -> tuple[str, dict]:
-        """Simulates an external call to a Risk Scoring Service."""
+    def get_params(self, params):
+        _, details_amount_policy_calculation = AmountPolicyRule(
+            self.application
+        ).execute(params)
+        _, details_dti_calculation = DebtToIncomeRule(self.application).execute(params)
 
-        # --- SIMULATION START ---
-        import random
-
-        # Logic is simulated to depend on application data
-        base_score = 700
-        if self.application.monthly_income < 2500:
-            base_score -= 50
-
-        # Add random noise for a realistic simulation
-        risk_score = base_score + random.randint(-40, 40)
-        # --- SIMULATION END ---
-
-        score_threshold = int(params.get("min_score", 650))
-
-        # Outcome is typically a score or a calculated tier/threshold status
-        outcome = "SCORE"
-        detail = {"risk_score": risk_score, "min_threshold": score_threshold}
-
-        return outcome, detail
-
-
-class SentimentCheck(BaseStep):
-    name = "sentiment_check"
-
-    def execute(self, params: dict) -> tuple[str, dict]:
-        """
-        Simulates an external AI Agent call to check for risky loan purposes.
-        (The preferred solution is a real API call, but we simulate it here.)
-        """
-
-        # --- SIMULATION START (AI Agent) ---
-        risky_keywords = params.get(
-            "risky_keywords", ["gambling", "crypto", "speculation", "investment"]
+        self.dti = details_dti_calculation["dti"]
+        self.max_amount_allowed = details_amount_policy_calculation["country_max"]
+        self.approve_threshold = params.get(
+            "approve_threshold", DEFAULT_PARAMS["risk_scoring"]["approve_threshold"]
         )
-        loan_purpose = self.application.loan_purpose.lower()
 
-        is_risky = any(keyword in loan_purpose for keyword in risky_keywords)
-        # --- SIMULATION END ---
+    def execute(self, params: dict) -> StepResult:
+        """Simulates an external call to a Risk Scoring Service."""
+        # risk = (dti * 100) + (amount / max_allowed * 20)
+        self.get_params(params)
+        risk_score = (self.dti * 100) + (
+            self.application.amount / self.max_amount_allowed * 20
+        )
 
-        outcome = "FAIL" if is_risky else "PASS"
+        outcome = "PASS" if risk_score <= self.approve_threshold else "FAIL"
+        detail = {"risk_score": risk_score, "min_threshold": self.approve_threshold}
+
+        return StepResult(outcome, detail)
+
+class SentimentCheckStep:
+    """
+    Bonus agent-style step.
+    Modes:
+      - 'keyword' (default)
+      - 'llm': uses DeepSeek R1 through OpenRouter
+    """
+
+    name = "sentiment_check"
+    class SentimentSubStrategy():
+        def is_risky(self, purpose: str, params: dict) -> bool: ...
+
+    class KeywordSentiment(SentimentSubStrategy):
+        def is_risky(self, purpose: str, params: dict) -> bool:
+            keywords = params.get("risky_keywords", DEFAULT_PARAMS["sentiment_check"]["risky_keywords"])
+            return risky_by_keywords(purpose, keywords)
+
+    class LLMSentiment(SentimentSubStrategy):
+        def is_risky(self, purpose: str, params: dict) -> bool:
+            return risky_by_deepseek(purpose)
+
+    SENTIMENT_MODES: Dict[str, SentimentSubStrategy] = {
+        "keyword": KeywordSentiment(),
+        "llm": LLMSentiment(),
+    }
+
+    def __init__(self, application):
+        self.application = application
+
+    def execute(self, params: dict) -> StepResult:
+        mode = params.get("mode", "keyword")
+        sentiment_strategy = self.SENTIMENT_MODES.get(mode, self.SENTIMENT_MODES["keyword"])
+        purpose = (self.application.loan_purpose or "").strip()
+
+        risky = sentiment_strategy.is_risky(purpose, params)
+        outcome = "RISKY" if risky else "SAFE"
         detail = {
-            "keywords_detected": is_risky,
-            "purpose": self.application.loan_purpose[:50],
+            "mode": mode,
+            "purpose": purpose,
+            "outcome_reason": (
+                "Matched risky keywords"
+                if (risky and mode == "keyword")
+                else ("DeepSeek detected risk" if risky else "No risk detected")
+            ),
         }
+        return StepResult(outcome, detail)
 
-        return outcome, detail
 
-
-# Step Processor Map: used by the Celery task to map step_type to class
-STEP_PROCESSORS = {
+STEP_PROCESSORS: Dict[str, BaseStep] = {
     "dti_rule": DebtToIncomeRule,
     "amount_policy": AmountPolicyRule,
     "risk_scoring": RiskScoringStep,
-    "sentiment_check": SentimentCheck,
+    "sentiment_check": SentimentCheckStep,
 }
