@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.utils import timezone
-
+from django.core.serializers.json import DjangoJSONEncoder
 
 STATUS_CHOICES = (
     ('APPROVED', 'Approved'),
@@ -125,7 +125,7 @@ class StepLog(models.Model):
     )
     step_type = models.CharField(max_length=50)
     outcome = models.CharField(max_length=50)
-    detail = models.JSONField(default=dict)
+    detail = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
     execution_time = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
