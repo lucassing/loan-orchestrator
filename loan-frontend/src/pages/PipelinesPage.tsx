@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import type { Pipeline } from "@/types";
-import { createPipeline, listPipelines } from "@/lib/api";
+import { createPipeline, listPipelines } from "@/api/api";
 import { PipelineForm } from "@/components/PipelineForm";
 
 export default function PipelinesPage() {

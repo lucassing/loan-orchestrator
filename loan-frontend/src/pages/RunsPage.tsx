@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { listRuns } from "@/lib/api";
+import { listRuns } from "@/api/api";
 import type { PipelineRun } from "@/types";
 import { RunsTable } from "@/components/RunsTable";
 

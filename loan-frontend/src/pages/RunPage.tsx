@@ -4,7 +4,7 @@ import {
   listPipelines,
   listRuns,
   runPipeline,
-} from "@/lib/api";
+} from "@/api/api";
 import type { Application, Pipeline, PipelineRun } from "@/types";
 import { Select } from "@/components/Select";
 import { RunsTable } from "@/components/RunsTable";
