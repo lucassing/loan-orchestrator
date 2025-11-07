@@ -137,7 +137,12 @@ class SentimentCheckStep:
         sentiment_strategy = self.SENTIMENT_MODES.get(mode, self.SENTIMENT_MODES["keyword"])
         purpose = (self.application.loan_purpose or "").strip()
 
-        risky = sentiment_strategy.is_risky(purpose, params)
+        try:
+            risky = sentiment_strategy.is_risky(purpose, params)
+        except Exception as _:
+            risky = self.SENTIMENT_MODES["keyword"].is_risky(purpose, params)
+            mode = "keyword"
+
         outcome = "RISKY" if risky else "SAFE"
         detail = {
             "mode": mode,
@@ -149,7 +154,6 @@ class SentimentCheckStep:
             ),
         }
         return StepResult(outcome, detail)
-
 
 STEP_PROCESSORS: Dict[str, BaseStep] = {
     "dti_rule": DebtToIncomeRule,

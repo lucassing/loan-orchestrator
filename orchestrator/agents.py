@@ -3,7 +3,11 @@ import os
 import requests
 from typing import Iterable
 from django.conf import settings
+import logging
+logger = logging.getLogger(__name__)
 
+class LLMException(Exception):
+    pass
 
 def risky_by_keywords(text: str, keywords: Iterable[str]) -> bool:
     if not text:
@@ -52,6 +56,9 @@ def risky_by_deepseek(text: str, *, threshold: float = 0.5) -> bool:
         )
         data = resp.json()
 
+        if resp.status_code != 200:
+            raise LLMException(data.get("error"))
+
         answer = (
             data.get("choices", [{}])[0]
             .get("message", {})
@@ -61,5 +68,5 @@ def risky_by_deepseek(text: str, *, threshold: float = 0.5) -> bool:
         )
         return "risky" in answer
     except Exception as e:
-        print(f"[DeepSeek] classification failed: {e}")
-        return False
+        logger.warning(f"[DeepSeek] classification failed: {e}")
+        raise e

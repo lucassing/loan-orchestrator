@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def evaluate_terminal_rule(condition: str, step_outcomes: dict) -> bool:
+def evaluate_terminal_rule(rule_condition: str, step_outcomes: dict) -> bool:
     """
     Evaluates a condition string against the collected step outcomes.
 
@@ -27,9 +27,9 @@ def evaluate_terminal_rule(condition: str, step_outcomes: dict) -> bool:
         eval_context[step_name] = StepResult(result["outcome"], result["detail"])
 
     try:
-        return simple_eval(condition, names=eval_context)
+        return simple_eval(rule_condition, names=eval_context)
     except Exception as e:
-        logger.error(f"Failed to evaluate rule condition '{condition}': {e}")
+        logger.error(f"Failed to evaluate rule condition '{rule_condition}': {e}")
         return False
 
 
