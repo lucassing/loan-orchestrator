@@ -21,12 +21,14 @@ export default function RunsPage() {
   }, []);
 
   return (
-    <div className="p-4 space-y-4">
-      <header className="space-y-1">
-        <h1 className="text-xl font-bold">Runs</h1>
-        <p className="text-sm text-gray-600">All runs with step logs.</p>
+    <div className="p-4">
+      <header className="mb-3">
+        <h1 className="h4 fw-bold mb-1">Runs</h1>
+        <p className="text-body-secondary small mb-0">
+          All runs with step logs.
+        </p>
       </header>
-      {loading ? <p>Loading…</p> : <RunsTable runs={runs} />}
+      {loading ? <p className="mb-0">Loading…</p> : <RunsTable runs={runs} />}
     </div>
   );
 }

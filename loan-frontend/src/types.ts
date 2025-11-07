@@ -21,7 +21,7 @@ export type PipelineStep = {
     | "sentiment_check"
     | string;
   order: number;
-  params: Record<string, any>;
+  params: unknown;
 };
 
 export type TerminalRule = {
@@ -43,7 +43,7 @@ export type Pipeline = {
 export type StepLog = {
   step_type: string;
   outcome: string;
-  detail: Record<string, any>;
+  detail: Record<string, unknown>;
   execution_time: string;
 };
 

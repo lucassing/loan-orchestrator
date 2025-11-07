@@ -15,9 +15,13 @@ export function StepEditor({
   onMove: (dir: "up" | "down") => void;
 }) {
   const update = (patch: Partial<PipelineStep>) => onChange(patch);
+  const paramsText =
+    typeof step.params === "string"
+      ? step.params
+      : JSON.stringify(step.params ?? {}, null, 2);
 
   return (
-    <div className="border rounded p-3 mb-2">
+    <div className="border rounded p-3 mb-2" data-index={index}>
       <div className="d-flex justify-content-between align-items-center mb-2">
         <div className="d-flex align-items-center gap-2">
           <strong>Step #{step.order}</strong>
@@ -62,12 +66,13 @@ export function StepEditor({
         <textarea
           className="form-control font-monospace"
           rows={4}
-          value={step.params}
+          value={paramsText}
           onChange={(e) => {
             try {
               const parsed = JSON.parse(e.target.value || "{}");
               update({ params: parsed });
-            } catch (exp) {
+            } catch {
+              // keep raw string while the JSON is invalid; normalized on submit
               update({ params: e.target.value });
             }
           }}

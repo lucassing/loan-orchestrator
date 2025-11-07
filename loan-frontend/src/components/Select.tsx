@@ -14,11 +14,13 @@ export function Select({
   id?: string;
 }) {
   return (
-    <label className="flex flex-col gap-1">
-      <span className="text-sm font-medium">{label}</span>
+    <div className="mb-3">
+      <label htmlFor={id} className="form-label">
+        {label}
+      </label>
       <select
         id={id}
-        className="border rounded px-2 py-1"
+        className="form-select"
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
       >
@@ -29,6 +31,6 @@ export function Select({
           </option>
         ))}
       </select>
-    </label>
+    </div>
   );
 }

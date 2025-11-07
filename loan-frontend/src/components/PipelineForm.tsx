@@ -57,9 +57,8 @@ export function PipelineForm() {
       { order: nextOrder, step_type: "dti_rule", params: {} },
     ]);
   }
-  function changeStep(idx: number, patch:any) {
+  function changeStep(idx: number, patch: Partial<PipelineStep>) {
     const arr = [...pipeline.steps]
-    console.log(patch)
     arr[idx] = { ...arr[idx], ...patch };
     updateField("steps", arr);
   }
@@ -113,23 +112,39 @@ export function PipelineForm() {
     updateField("terminal_rules", arr);
   }
 
+  function safeParseJson(maybe: unknown): unknown {
+    if (typeof maybe !== "string") return maybe;
+    try {
+      return JSON.parse(maybe);
+    } catch {
+      return maybe;
+    }
+  }
+  
+  function normalizePipelineParams(p: Pipeline): Pipeline {
+    return {
+      ...p,
+      steps: p.steps.map((s) => ({
+        ...s,
+        params: safeParseJson(s.params) as Record<string, unknown>,
+      })),
+    };
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    const normalized = normalizePipelineParams({
+      ...pipeline,
+      terminal_rules: [...pipeline.terminal_rules].sort((a, b) => a.order - b.order),
+    });
     if (selectedId) {
       await updatePipeline(Number(selectedId), {
-        ...pipeline,
-        terminal_rules: [...pipeline.terminal_rules].sort(
-          (a, b) => a.order - b.order
-        ),
+        ...normalized,
+
       });
       setMsg("Pipeline updated.");
     } else {
-      await createPipeline({
-        ...pipeline,
-        terminal_rules: [...pipeline.terminal_rules].sort(
-          (a, b) => a.order - b.order
-        ),
-      });
+      await createPipeline(normalized);
       setMsg("Pipeline created.");
     }
     setPipelines(await listPipelines());

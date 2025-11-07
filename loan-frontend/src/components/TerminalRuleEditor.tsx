@@ -14,7 +14,7 @@ export function TerminalRuleEditor({
   onMove: (dir: "up" | "down") => void;
 }) {
   return (
-    <div className="border rounded p-3 mb-2">
+    <div className="border rounded p-3 mb-2" data-index={index}>
       <div className="d-flex justify-content-between align-items-center mb-2">
         <strong>Rule #{rule.order}</strong>
         <div className="btn-group btn-group-sm">
