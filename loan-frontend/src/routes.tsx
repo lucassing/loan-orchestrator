@@ -1,7 +1,3 @@
-// ============================
-// File: src/routes.tsx
-// ============================
-import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "@/App";
 import PipelinesPage from "@/pages/PipelinesPage";
