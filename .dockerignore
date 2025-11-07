@@ -1,0 +1,22 @@
+# VCS / env / caches
+.git
+.venv
+__pycache__/
+*.pyc
+.env
+.env.*
+
+# Frontend junk
+loan-frontend/node_modules
+**/node_modules
+loan-frontend/dist
+**/dist
+**/dist-ssr
+**/build
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Misc
+*.log
+.DS_Store
