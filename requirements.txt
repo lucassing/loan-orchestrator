@@ -6,3 +6,12 @@ django-environ>=0.11.2
 whitenoise>=6.6
 dj_database_url
 drf-spectacular[sidecar]
+celery
+simpleeval
+redis
+django-cors-headers
+
+pytest
+pytest-django
+pytest-cov
+requests

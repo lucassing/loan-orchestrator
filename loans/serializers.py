@@ -34,18 +34,31 @@ class PipelineSerializer(serializers.ModelSerializer):
         steps_data = validated_data.pop('steps')
         rules_data = validated_data.pop('terminal_rules')
         pipeline = Pipeline.objects.create(**validated_data)
-        
+
         for step_data in steps_data:
             PipelineStep.objects.create(pipeline=pipeline, **step_data)
         for rule_data in rules_data:
             TerminalRule.objects.create(pipeline=pipeline, **rule_data)
-            
+
         return pipeline
 
     def update(self, instance, validated_data):
-        # TODO
-        return super().update(instance, validated_data)
+        steps_data = validated_data.pop('steps', [])
+        rules_data = validated_data.pop('terminal_rules', [])
 
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        instance.steps.all().delete()
+        for step_data in steps_data:
+            PipelineStep.objects.create(pipeline=instance, **step_data)
+
+        instance.terminal_rules.all().delete()
+        for rule_data in rules_data:
+            TerminalRule.objects.create(pipeline=instance, **rule_data)
+
+        return instance
 class ApplicationSerializer(serializers.ModelSerializer):
     """Serializer for creating and viewing loan applications."""
     class Meta:
