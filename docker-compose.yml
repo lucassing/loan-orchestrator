@@ -1,5 +1,5 @@
 services:
-  web:
+  django-service:
     build:
       context: .
       dockerfile: Dockerfile
@@ -85,6 +85,20 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
+
+  frontend:
+    depends_on:
+      django-service:
+        condition: service_healthy
+    build:
+      context: .
+      dockerfile: loan-frontend/Dockerfile
+    init: true
+    command: npm run dev -- --host
+    volumes:
+      - ./loan-frontend:/loan-frontend/
+    ports:
+      - 5173:5173
 
 volumes:
   db_data:
