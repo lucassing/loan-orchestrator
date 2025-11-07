@@ -23,7 +23,7 @@ def risky_by_deepseek(text: str, *, threshold: float = 0.5) -> bool:
     Falls back to False if API unavailable or any error.
     """
     if not (settings.OPENROUTER_API_KEY and text):
-        return False
+        raise LLMException("Missing Credentials or text for LLM analysis")
 
     try:
         resp = requests.post(
