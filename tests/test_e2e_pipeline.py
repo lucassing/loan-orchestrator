@@ -1,15 +1,14 @@
+import pytest
 from django.test import override_settings
 from rest_framework.test import APIClient
+
 from loans.tasks import run_pipeline_task
 
-
-import pytest
-
 testdata = [
-    ["Ana", 12000, 4000, 500, "ES", "home renovation","APPROVED"],
-    ["Luis", 28000, 2000, 1200, "OTHER", "home renovation","REJECTED"],
-    ["Mia", 20000, 3000, 900, "FR", "home renovation","NEEDS_REVIEW"],
-    ["Eva", 15000, 5000, 200, "ES", "gambling", "REJECTED"]
+    ["Ana", 12000, 4000, 500, "ES", "home renovation", "APPROVED"],
+    ["Luis", 28000, 2000, 1200, "OTHER", "home renovation", "REJECTED"],
+    ["Mia", 20000, 3000, 900, "FR", "home renovation", "NEEDS_REVIEW"],
+    ["Eva", 15000, 5000, 200, "ES", "gambling", "REJECTED"],
 ]
 
 
@@ -61,9 +60,7 @@ def test_e2e_create_application_pipeline_and_run(
             {
                 "step_type": "sentiment_check",
                 "order": 3,
-                "params": {
-                    "mode": "llm"
-                },
+                "params": {"mode": "llm"},
             },
             {
                 "step_type": "risk_scoring",

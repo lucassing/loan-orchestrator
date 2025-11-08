@@ -1,8 +1,10 @@
-from .core import BaseStep, StepResult
 import logging
 from decimal import Decimal
 from typing import Dict
-from orchestrator.agents import risky_by_keywords, risky_by_deepseek
+
+from orchestrator.agents import risky_by_deepseek, risky_by_keywords
+
+from .core import BaseStep, StepResult
 
 logger = logging.getLogger(__name__)
 
@@ -17,10 +19,8 @@ DEFAULT_PARAMS = {
 }
 
 
-
 class DebtToIncomeRule(BaseStep):
     name = "dti_rule"
-    
 
     def get_params(self, params):
         self.threshold = Decimal(
@@ -103,6 +103,7 @@ class RiskScoringStep(BaseStep):
 
         return StepResult(outcome, detail)
 
+
 class SentimentCheckStep:
     """
     Bonus agent-style step.
@@ -112,12 +113,15 @@ class SentimentCheckStep:
     """
 
     name = "sentiment_check"
-    class SentimentSubStrategy():
+
+    class SentimentSubStrategy:
         def is_risky(self, purpose: str, params: dict) -> bool: ...
 
     class KeywordSentiment(SentimentSubStrategy):
         def is_risky(self, purpose: str, params: dict) -> bool:
-            keywords = params.get("risky_keywords", DEFAULT_PARAMS["sentiment_check"]["risky_keywords"])
+            keywords = params.get(
+                "risky_keywords", DEFAULT_PARAMS["sentiment_check"]["risky_keywords"]
+            )
             return risky_by_keywords(purpose, keywords)
 
     class LLMSentiment(SentimentSubStrategy):
@@ -134,7 +138,9 @@ class SentimentCheckStep:
 
     def execute(self, params: dict) -> StepResult:
         mode = params.get("mode", "keyword")
-        sentiment_strategy = self.SENTIMENT_MODES.get(mode, self.SENTIMENT_MODES["keyword"])
+        sentiment_strategy = self.SENTIMENT_MODES.get(
+            mode, self.SENTIMENT_MODES["keyword"]
+        )
         purpose = (self.application.loan_purpose or "").strip()
 
         try:
@@ -154,6 +160,7 @@ class SentimentCheckStep:
             ),
         }
         return StepResult(outcome, detail)
+
 
 STEP_PROCESSORS: Dict[str, BaseStep] = {
     "dti_rule": DebtToIncomeRule,

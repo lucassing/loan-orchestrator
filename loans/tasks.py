@@ -1,13 +1,13 @@
+import logging
+
 from celery import shared_task
 from django.db import transaction
 from django.utils import timezone
+from simpleeval import simple_eval
+
 from loans.models import Application, Pipeline, PipelineRun, StepLog
 from orchestrator.core import StepResult
 from orchestrator.steps import STEP_PROCESSORS
-from simpleeval import (
-    simple_eval,
-)
-import logging
 
 logger = logging.getLogger(__name__)
 

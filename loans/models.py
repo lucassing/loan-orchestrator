@@ -1,13 +1,14 @@
-from django.db import models
 from django.contrib.postgres.fields import ArrayField
-from django.utils import timezone
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db import models
+from django.utils import timezone
 
 STATUS_CHOICES = (
-    ('APPROVED', 'Approved'),
-    ('REJECTED', 'Rejected'),
-    ('NEEDS_REVIEW', 'Needs Review'),
+    ("APPROVED", "Approved"),
+    ("REJECTED", "Rejected"),
+    ("NEEDS_REVIEW", "Needs Review"),
 )
+
 
 class Application(models.Model):
     applicant_name = models.CharField(max_length=200)
@@ -19,9 +20,7 @@ class Application(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='NEEDS_REVIEW'
+        max_length=20, choices=STATUS_CHOICES, default="NEEDS_REVIEW"
     )
 
     def __str__(self):
@@ -30,6 +29,7 @@ class Application(models.Model):
 
 class Pipeline(models.Model):
     """A definition of a sequence of steps (the workflow)."""
+
     name = models.CharField(max_length=100, unique=True)
     is_active = models.BooleanField(default=True)
     description = models.TextField(blank=True, null=True)
@@ -40,10 +40,9 @@ class Pipeline(models.Model):
 
 class PipelineStep(models.Model):
     """An ordered step in a pipeline, linked to an executable processor class."""
+
     pipeline = models.ForeignKey(
-        Pipeline,
-        on_delete=models.CASCADE,
-        related_name='steps'
+        Pipeline, on_delete=models.CASCADE, related_name="steps"
     )
     step_type = models.CharField(
         max_length=50,
@@ -53,8 +52,11 @@ class PipelineStep(models.Model):
     params = models.JSONField(default=dict)
 
     class Meta:
-        unique_together = ('pipeline', 'order',)
-        ordering = ['order']
+        unique_together = (
+            "pipeline",
+            "order",
+        )
+        ordering = ["order"]
         verbose_name_plural = "Pipeline Steps"
 
     def __str__(self):
@@ -89,24 +91,16 @@ class TerminalRule(models.Model):
 
 class PipelineRun(models.Model):
     """Records one execution of a Pipeline on an Application."""
+
     application = models.ForeignKey(
-        Application,
-        on_delete=models.CASCADE,
-        related_name='pipeline_runs'
+        Application, on_delete=models.CASCADE, related_name="pipeline_runs"
     )
-    pipeline = models.ForeignKey(
-        Pipeline,
-        on_delete=models.SET_NULL,
-        null=True
-    )
+    pipeline = models.ForeignKey(Pipeline, on_delete=models.SET_NULL, null=True)
     start_time = models.DateTimeField(default=timezone.now)
     end_time = models.DateTimeField(null=True, blank=True)
 
     final_status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        null=True,
-        blank=True
+        max_length=20, choices=STATUS_CHOICES, null=True, blank=True
     )
 
     def __str__(self):
@@ -118,10 +112,9 @@ class PipelineRun(models.Model):
 
 class StepLog(models.Model):
     """Records the outcome and details for an individual step's execution."""
+
     pipeline_run = models.ForeignKey(
-        PipelineRun,
-        on_delete=models.CASCADE,
-        related_name='step_logs'
+        PipelineRun, on_delete=models.CASCADE, related_name="step_logs"
     )
     step_type = models.CharField(max_length=50)
     outcome = models.CharField(max_length=50)
@@ -132,5 +125,5 @@ class StepLog(models.Model):
         return f"{self.step_type}: {self.outcome}"
 
     class Meta:
-        ordering = ['execution_time']
+        ordering = ["execution_time"]
         verbose_name_plural = "Step Logs"

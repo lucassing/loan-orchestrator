@@ -1,11 +1,12 @@
 import logging
-from decimal import Decimal
 from dataclasses import dataclass
+from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
 from enum import Enum
-from typing import Dict, Any
+from typing import Any, Dict
+
 
 class Outcome(str, Enum):
     PASS_ = "PASS"
@@ -18,13 +19,14 @@ class StepResult:
     outcome: Outcome
     detail: Dict[str, Any]
 
-    def __iter__(self): 
+    def __iter__(self):
         yield self.outcome
         yield self.detail
 
 
 class BaseStep:
     """Abstract base class for all pipeline steps."""
+
     name = "base_step"
 
     def __init__(self, application):

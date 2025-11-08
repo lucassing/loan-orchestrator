@@ -1,13 +1,17 @@
 # orchestrator/agents.py
-import os
-import requests
-from typing import Iterable
-from django.conf import settings
 import logging
+import os
+from typing import Iterable
+
+import requests
+from django.conf import settings
+
 logger = logging.getLogger(__name__)
+
 
 class LLMException(Exception):
     pass
+
 
 def risky_by_keywords(text: str, keywords: Iterable[str]) -> bool:
     if not text:
