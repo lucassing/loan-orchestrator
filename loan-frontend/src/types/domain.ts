@@ -6,9 +6,9 @@ export type StepType =
   | "sentiment_check";
 
 export type JSONValue =
-    | string
-    | number
-    | boolean
-    | null
-    | JSONValue[]
-    | { [k: string]: JSONValue };
+  | string
+  | number
+  | boolean
+  | null
+  | JSONValue[]
+  | { [k: string]: JSONValue };

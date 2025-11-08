@@ -3,7 +3,7 @@ import type { Status, StepType } from "./domain";
 export type FormStep = {
   order: number;
   step_type: StepType;
-  params_text: string; 
+  params_text: string;
 };
 
 export type FormRule = {
@@ -19,5 +19,3 @@ export type PipelineFormValues = {
   steps: FormStep[];
   terminal_rules: FormRule[];
 };
-
-

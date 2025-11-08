@@ -3,7 +3,7 @@ import { FormProvider } from "react-hook-form";
 import { useState } from "react";
 import { StepEditor } from "@/components/StepEditor";
 import { TerminalRuleEditor } from "@/components/TerminalRuleEditor";
-import {usePipelineForm} from "@/hooks/usePipelineForm"
+import { usePipelineForm } from "@/hooks/usePipelineForm";
 
 export function PipelineForm() {
   const [selectedId, setSelectedId] = useState<string>("");
@@ -15,7 +15,7 @@ export function PipelineForm() {
     newPipeline,
     stepsFA,
     rulesFA,
-    msg
+    msg,
   } = usePipelineForm(selectedId, setSelectedId);
 
   return (
@@ -176,5 +176,3 @@ export function PipelineForm() {
     </div>
   );
 }
-
-

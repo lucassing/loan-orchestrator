@@ -29,7 +29,7 @@ export async function getPipeline(id: number): Promise<Pipeline> {
 
 export async function updatePipeline(
   id: number,
-  payload: Partial<Pipeline>
+  payload: Partial<Pipeline>,
 ): Promise<Pipeline> {
   const { data } = await api.put(`/pipelines/${id}/`, payload);
   return data;

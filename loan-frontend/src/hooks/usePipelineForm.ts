@@ -24,7 +24,7 @@ function applyDrfErrors(
   data: any,
   basePath: string,
   setError: (name: any, error: { type?: string; message?: string }) => void,
-  firstPathRef: { value: string | null }
+  firstPathRef: { value: string | null },
 ) {
   if (Array.isArray(data)) {
     if (data.length && typeof data[0] === "string") {
@@ -93,13 +93,11 @@ function toApiPayload(values: PipelineFormValues): Pipeline {
     params: parseMaybeJSON(s.params_text) as JSONValue | string,
   }));
 
-  const terminal_rules: TerminalRule[] = values.terminal_rules.map(
-    (r, i) => ({
-      order: i + 1,
-      condition: r.condition,
-      final_status: r.final_status,
-    })
-  );
+  const terminal_rules: TerminalRule[] = values.terminal_rules.map((r, i) => ({
+    order: i + 1,
+    condition: r.condition,
+    final_status: r.final_status,
+  }));
 
   return {
     name: values.name,
@@ -122,7 +120,10 @@ function validateJsonBeforeSubmit(values: PipelineFormValues): string | null {
   return null;
 }
 
-export function usePipelineForm(selectedId: string, setSelectedId: (arg0: string) => void) {
+export function usePipelineForm(
+  selectedId: string,
+  setSelectedId: (arg0: string) => void,
+) {
   const [pipelines, setPipelines] = useState<Pipeline[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -154,7 +155,7 @@ export function usePipelineForm(selectedId: string, setSelectedId: (arg0: string
       const p = await getPipeline(Number(id));
       reset(toFormValues(p));
     },
-    [reset]
+    [reset],
   );
 
   const newPipeline = useCallback(() => {
@@ -166,7 +167,7 @@ export function usePipelineForm(selectedId: string, setSelectedId: (arg0: string
         description: "",
         steps: [],
         terminal_rules: [],
-      } as Pipeline)
+      } as Pipeline),
     );
   }, [setSelectedId, reset]);
 
@@ -211,14 +212,7 @@ export function usePipelineForm(selectedId: string, setSelectedId: (arg0: string
         }
       }
     },
-    [
-      selectedId,
-      setSelectedId,
-      setError,
-      setFocus,
-      setMsg,
-      setPipelines,
-    ]
+    [selectedId, setSelectedId, setError, setFocus, setMsg, setPipelines],
   );
 
   const onSubmit = handleSubmit(onFormSubmit);
