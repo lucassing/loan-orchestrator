@@ -1,27 +1,48 @@
 import { Link, Outlet } from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function App() {
   return (
-    <div className="container">
-      <nav className="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
-        <div className="d-flex align-items-center gap-3">
-          <Link to="/" className="fw-bold text-decoration-none">
+    <div>
+      <nav className="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+        <div className="container-fluid px-4">
+          <Link className="navbar-brand fw-bold" to="/">
             Loan Orchestrator
           </Link>
-          <Link to="/" className="small text-decoration-none">
-            Pipelines
-          </Link>
-          <Link to="/run" className="small text-decoration-none">
-            Run
-          </Link>
-          <Link to="/runs" className="small text-decoration-none">
-            Runs
-          </Link>
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span className="navbar-toggler-icon"></span>
+          </button>
+          <div className="collapse navbar-collapse" id="navbarNav">
+            <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+              <li className="nav-item">
+                <Link className="nav-link" to="/">
+                  Builder
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/run">
+                  Run
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/runs">
+                  Runs
+                </Link>
+              </li>
+            </ul>
+          </div>
         </div>
-        <div className="small text-body-secondary">MVP • React + Vite</div>
       </nav>
-      <Outlet />
+      <div className="container mt-4">
+        <Outlet />
+      </div>
     </div>
   );
 }
