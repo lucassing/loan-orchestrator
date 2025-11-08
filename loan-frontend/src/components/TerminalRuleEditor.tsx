@@ -1,22 +1,32 @@
-import type { TerminalRule } from "@/types";
+// src/components/TerminalRuleEditor.tsx
+import { useFormContext } from "react-hook-form";
+import type { PipelineFormValues } from "@/types";
 
 export function TerminalRuleEditor({
-  rule,
   index,
-  onChange,
   onRemove,
   onMove,
 }: {
-  rule: TerminalRule;
   index: number;
-  onChange: (patch: Partial<TerminalRule>) => void;
   onRemove: () => void;
   onMove: (dir: "up" | "down") => void;
 }) {
+  const { register, formState } = useFormContext<PipelineFormValues>();
+  const order = index + 1;
+
+  const fieldErr = formState.errors.terminal_rules?.[index];
+  const conditionError = fieldErr?.condition?.message as string | undefined;
+
+  const examples = [
+    "dti_rule.outcome == 'FAIL' or amount_policy.outcome == 'FAIL'",
+    "sentiment_check.outcome == 'RISKY'",
+    "risk_scoring.outcome == 'PASS'",
+  ];
+
   return (
     <div className="border rounded p-3 mb-2" data-index={index}>
       <div className="d-flex justify-content-between align-items-center mb-2">
-        <strong>Rule #{rule.order}</strong>
+        <strong>Rule #{order}</strong>
         <div className="btn-group btn-group-sm">
           <button
             type="button"
@@ -41,25 +51,41 @@ export function TerminalRuleEditor({
           </button>
         </div>
       </div>
+
+      <input
+        type="hidden"
+        {...register(`terminal_rules.${index}.order` as const)}
+        value={order}
+      />
+
       <div className="mb-2">
         <label className="form-label">Condition</label>
         <input
-          className="form-control"
+          className={`form-control ${conditionError ? "is-invalid" : ""}`}
           placeholder="e.g. dti_rule.outcome == 'FAIL'"
-          value={rule.condition}
-          onChange={(e) => onChange({ condition: e.target.value })}
+          {...register(`terminal_rules.${index}.condition` as const)}
         />
+        {conditionError && (
+          <div className="invalid-feedback">{conditionError}</div>
+        )}
+
+        <div className="form-text mt-1">
+          <span>Examples:</span>
+          <ul className="mb-0">
+            {examples.map((ex, i) => (
+              <li key={i}>
+                <code>{ex}</code>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
+
       <div>
         <label className="form-label">Final Status</label>
         <select
           className="form-select w-auto"
-          value={rule.final_status}
-          onChange={(e) =>
-            onChange({
-              final_status: e.target.value as TerminalRule["final_status"],
-            })
-          }
+          {...register(`terminal_rules.${index}.final_status` as const)}
         >
           <option value="APPROVED">APPROVED</option>
           <option value="REJECTED">REJECTED</option>

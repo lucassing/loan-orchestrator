@@ -1,9 +1,9 @@
-export type Status = "APPROVED" | "REJECTED" | "NEEDS_REVIEW";
+import type { Status, StepType, JSONValue } from "./domain";
 
 export type Application = {
   id: number;
   applicant_name: string;
-  amount: string; // decimal as string from DRF
+  amount: string;
   monthly_income: string;
   declared_debts: string;
   country: string;
@@ -14,14 +14,9 @@ export type Application = {
 
 export type PipelineStep = {
   id?: number;
-  step_type:
-    | "dti_rule"
-    | "amount_policy"
-    | "risk_scoring"
-    | "sentiment_check"
-    | string;
+  step_type: StepType;
   order: number;
-  params: unknown;
+  params: JSONValue;
 };
 
 export type TerminalRule = {
@@ -43,7 +38,7 @@ export type Pipeline = {
 export type StepLog = {
   step_type: string;
   outcome: string;
-  detail: Record<string, unknown>;
+  detail: JSONValue;
   execution_time: string;
 };
 
