@@ -22,7 +22,7 @@ services:
         chown -R appuser:appuser /app/staticfiles /app/media &&
         python manage.py collectstatic --noinput &&
         python manage.py migrate --noinput &&
-        python manage.py runserver 0.0.0:8000
+        python manage.py runserver 0.0.0.0:8000
       "
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health/ || exit 1"]
@@ -83,8 +83,14 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    ports:
-      - "6379:6379"
+    env_file: .env
+    command: >
+      sh -c "exec redis-server
+             --appendonly yes
+             --requirepass \"$${REDIS_PASSWORD}\"
+             --protected-mode yes
+             --rename-command SLAVEOF ''
+             --rename-command CONFIG ''"
 
   frontend:
     depends_on:

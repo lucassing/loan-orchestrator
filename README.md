@@ -62,14 +62,7 @@ cp .env.example .env
 # Edit .env.local as needed; you can also keep the file name as .env
 ```
 
-2. **(One-time) install frontend deps into the mounted volume**
-   The frontend container runs `npm run dev`, so make sure `node_modules` exists in the mounted folder.
-
-```bash
-docker compose run --rm frontend npm install
-```
-
-3. **Up all services**
+2. **Up all services**
 
 ```bash
 docker compose --env-file .env up --build

@@ -5,3 +5,6 @@ RUN userdel node && useradd appuser --uid ${UID} -l --create-home && mkdir /loan
 
 WORKDIR /loan-frontend
 USER appuser
+
+COPY --chown=appuser:appuser loan-frontend/package*.json ./
+RUN npm install
